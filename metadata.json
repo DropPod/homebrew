@@ -1,0 +1,9 @@
+{
+  "name": "DropPod/homebrew",
+  "version": "0.0.0",
+  "summary": "A Puppet package provider for managing Homebrew",
+  "source": "https://github.com/DropPod/homebrew.git",
+  "author": "Pieter van de Bruggen",
+  "license": "MIT",
+  "dependencies": []
+}

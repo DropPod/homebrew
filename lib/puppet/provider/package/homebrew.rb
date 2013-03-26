@@ -32,7 +32,7 @@ Puppet::Type.type(:package).provide(:homebrew, :parent => Puppet::Provider::Pack
   end
 
   def self.instance_hashes(options={})
-    cmd = [command(:brew), "list", "--versions", options[:justme]].compact
+    cmd = [command(:brew), "list", "--versions"]
 
     begin
       list = execute(cmd).split("\n")
@@ -45,7 +45,7 @@ Puppet::Type.type(:package).provide(:homebrew, :parent => Puppet::Provider::Pack
       raise Puppet::Error, "Could not list brews: #{detail}"
     end
 
-    options[:justme] ? list.first : list
+    list
   end
 
   def self.instances
@@ -59,7 +59,16 @@ Puppet::Type.type(:package).provide(:homebrew, :parent => Puppet::Provider::Pack
   end
 
   def query
-    self.class.instance_hashes(:justme => resource[:name])
+    cmd = [command(:brew), "info", resource[:name]]
+    begin
+      cellar = execute([command(:brew), '--cellar']).chomp
+      info = execute(cmd).split("\n").grep(/^#{cellar}/).first
+      return nil if info.nil?
+      version = info[%r{^#{cellar}/[^/]+/(\S+)}, 1]
+      return { :provider => :homebrew, :name => resource[:name], :ensure => version }
+    rescue Puppet::ExecutionFailure => detail
+      raise Puppet::Error, "Could not query brews: #{detail}"
+    end
   end
 
   def latest
